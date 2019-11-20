@@ -1,0 +1,50 @@
+version: '3'
+
+services: 
+
+  postgres:
+    image: postgres:11.5-alpine
+    volumes:
+    - database:/var/lib/postgresql/data
+    env_file:
+      - .env
+  
+  backend:
+    image: registry.gitlab.propulsion-home.ch/full-stack/batch-9-september-2019/group-projects/phoenix:backend
+    depends_on: 
+      - postgres
+    volumes:
+      - media-files:/media-files
+      - static-files:/static-files
+    command: 'sh ../scripts/run.sh'
+    env_file:
+      - .env
+
+  frontend:
+    image: registry.gitlab.propulsion-home.ch/full-stack/batch-9-september-2019/group-projects/phoenix:frontend
+    command: "bash -c 'cp -r /frontend_tmp/build/* /frontend/build'"
+    volumes:
+      - frontend:/frontend/build
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:latest
+    ports: 
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - frontend:/frontend
+      - static-files:/static-files
+      - media-files:/media-files
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    
+volumes:
+  database:
+  media-files:
+  static-files:
+  frontend:

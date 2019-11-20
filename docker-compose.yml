@@ -1,0 +1,55 @@
+version: '3'
+
+services: 
+
+  postgres:
+    image: postgres:11.5-alpine
+    volumes:
+    - ./database:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - '5432:5432'
+  
+  backend:
+    image: registry.gitlab.propulsion-home.ch/full-stack/batch-9-september-2019/group-projects/phoenix:backend
+    depends_on: 
+      - postgres
+    volumes:
+      - ./media-files:/media-files
+      - ./static-files:/static-files
+      - ./backend:/backend
+    command: 'sh ../scripts/run.sh'
+    ports:
+      - "2222:22"
+      - "8001:8001"
+    env_file:
+      - .env
+    tty: true
+
+  frontend:
+    image: registry.gitlab.propulsion-home.ch/full-stack/batch-9-september-2019/group-projects/phoenix:frontend
+    volumes:
+      - frontend:/frontend/build
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:latest
+    ports: 
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - frontend:/frontend
+      - ./static-files:/static-files
+      - ./media-files:/media-files
+    
+volumes:
+  database:
+  media-files:
+  static-files:
+  frontend:

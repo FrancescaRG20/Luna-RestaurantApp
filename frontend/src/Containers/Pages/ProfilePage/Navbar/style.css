@@ -1,0 +1,24 @@
+.navbar-profile-title {
+  font-family: Helvetica;
+  font-size: 18px;
+  font-weight: 300;
+  color: #303030;
+  width: 80%;
+}
+
+.navbar-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navbar-profile-owner {
+  font-family: Helvetica;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #4c4c4c;
+  display: flex;
+}

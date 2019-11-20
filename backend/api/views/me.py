@@ -1,0 +1,39 @@
+from django.contrib.auth import get_user_model
+from rest_framework import serializers, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from api.models.user_profile import UserProfile
+from api.serializers.user_profile import UserProfileSerializer
+#from api.serializers.user import UserSerializer, UpdateUserSerializer
+from api.serializers.user_profile import UserProfileSerializer, UpdateUserProfileSerializer
+from api.serializers.me import MeSerializer, UpdateMeSerializer
+
+User = get_user_model()
+
+
+class GetUpdateUserProfileView(APIView):
+    '''
+    Get and update the user profile of the loggedin user
+    '''
+    def get(self, request, **kwargs):
+        user_id = request.user.id
+        user = User.objects.get(id=user_id)
+        if user:
+            serializer = MeSerializer(instance=user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, **kwargs):
+        user_id = request.user.id
+        user = User.objects.get(pk=user_id)
+        profile = UserProfile.objects.get(auth_user=user_id)
+        serializerUser = UpdateMeSerializer(
+            instance=user, data=request.data, partial=True)
+        serializerProfile = UpdateUserProfileSerializer(
+            instance=profile, data=request.data, partial=True)
+        serializerUser.is_valid(raise_exception=True)
+        serializerProfile.is_valid(raise_exception=True)
+        serializerUser.save()
+        serializerProfile.save()
+        serializer = MeSerializer(instance=User.objects.get(pk=user_id))
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
